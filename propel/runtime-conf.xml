@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <propel>
+        <datasources default="twitter">
+            <datasource id="twitter">
+                <adapter>mysql</adapter> <!-- sqlite, mysql, myssql, oracle, or pgsql -->
+                <connection>
+                    <dsn>mysql:host=localhost;dbname=twitter</dsn>
+                    <user>root</user>
+                    <password>ltqpsmr7</password>
+                </connection>
+            </datasource>
+        </datasources>
+        <log>
+            <logger name="defaultLogger">
+                <type>stream</type>
+                <path>/var/log/propel.log</path>
+                <level>300</level>
+            </logger>
+        </log>
+    </propel>
+</config>

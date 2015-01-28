@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="twitter" defaultIdMethod="native">
+
+    <behavior name="timestampable" />
+
+    <table name="user" phpName="User">
+        <column name="id" phpName="ID" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
+        <column name="uuid" phpName="UUID" type="char" size="36" required="true"/>
+        <column name="email" phpName="EmailAddress" type="varchar" size="128" required="true"/>
+        <column name="password" phpName="Password" type="varchar" size="255" required="true"/>
+        <column name="first_name" phpName="FirstName" type="varchar" size="128" required="true"/>
+        <column name="last_name" phpName="LastName" type="varchar" size="128" required="true"/>
+    </table>
+
+
+</database>

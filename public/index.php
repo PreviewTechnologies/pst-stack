@@ -1,6 +1,8 @@
 <?php
 require '../vendor/autoload.php';
 
+require_once '../propel/generated-conf/config.php';
+
 // Prepare app
 $app = new \Slim\Slim(array(
     'templates.path' => '../templates',
