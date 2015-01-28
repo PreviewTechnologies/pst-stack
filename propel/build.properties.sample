@@ -1,6 +1,6 @@
-propel.project = twitter
+propel.project = yourdbname
 propel.database = mysql
 
 propel.database.url = localhost
-propel.database.user = root
-propel.database.password = ltqpsmr7
+propel.database.user = yourdbusername
+propel.database.password = yourdbpassword

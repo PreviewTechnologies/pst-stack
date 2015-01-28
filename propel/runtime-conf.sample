@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <propel>
-        <datasources default="twitter">
-            <datasource id="twitter">
+        <datasources default="yourdbname">
+            <datasource id="yourdbname">
                 <adapter>mysql</adapter> <!-- sqlite, mysql, myssql, oracle, or pgsql -->
                 <connection>
-                    <dsn>mysql:host=localhost;dbname=twitter</dsn>
-                    <user>root</user>
-                    <password>ltqpsmr7</password>
+                    <dsn>mysql:host=localhost;dbname=yourdbname</dsn>
+                    <user>yourdbusername</user>
+                    <password>yourdbpassword</password>
                 </connection>
             </datasource>
         </datasources>
