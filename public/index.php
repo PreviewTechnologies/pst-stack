@@ -29,6 +29,10 @@ $app->view->parserExtensions = array(new \Slim\Views\TwigExtension());
 
 // Define routes
 $app->get('/', function () use ($app) {
+
+    $user = UserQuery::create()
+        ->find();
+    var_dump($user); die();
     // Sample log message
     $app->log->info("Slim-Skeleton '/' route");
     // Render index view

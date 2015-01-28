@@ -18,5 +18,11 @@
         "slim/views": "0.*",
         "twig/twig": "1.*",
         "propel/propel": "2.0.0-alpha2"
+    },
+    "autoload": {
+        "classmap": ["propel/generated-classes/"],
+        "psr-0": {
+            "": "src/"
+        }
     }
 }
