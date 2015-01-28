@@ -5,6 +5,7 @@
 !/templates/cache/README.md
 .DS_STORE
 composer.lock
+propel/generated-conf/config.php
 
 
 .idea/*
