@@ -37,7 +37,7 @@ class UserTableMap extends TableMap
     /**
      * The default database name for this class
      */
-    const DATABASE_NAME = 'twitter';
+    const DATABASE_NAME = 'yourdbname';
 
     /**
      * The table name for this class

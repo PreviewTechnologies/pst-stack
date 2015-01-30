@@ -10,7 +10,8 @@
         "slim/slim": "2.*",
         "slim/views": "0.*",
         "twig/twig": "1.*",
-        "propel/propel": "2.0.0-alpha2"
+        "propel/propel": "2.0.0-alpha2",
+        "ircmaxell/password-compat": "dev-master"
     },
     "autoload": {
         "classmap": ["propel/generated-classes/"],

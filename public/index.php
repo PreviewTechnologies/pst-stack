@@ -1,43 +1,17 @@
 <?php
-require '../vendor/autoload.php';
+require "../bootstrap.php";
 
-require_once '../propel/generated-conf/config.php';
+//some common functions for using within anywhere in the application
 
-// Prepare app
-$app = new \Slim\Slim(array(
-    'templates.path' => '../templates',
-));
+function requireLogin()
+{
+    if (!App::userLoggedIn()) {
+        $app = \Slim\Slim::getInstance();
+        $app->flash('error', 'You must be logged in to access that page');
+        $app->redirect('/login');
+    }
+}
 
-// Create monolog logger and store logger in container as singleton 
-// (Singleton resources retrieve the same log resource definition each time)
-$app->container->singleton('log', function () {
-    $log = new \Monolog\Logger('slim-skeleton');
-    $log->pushHandler(new \Monolog\Handler\StreamHandler('../logs/app.log', \Monolog\Logger::DEBUG));
-    return $log;
-});
+require "../routes/default.php";
 
-// Prepare view
-$app->view(new \Slim\Views\Twig());
-$app->view->parserOptions = array(
-    'charset' => 'utf-8',
-    'cache' => realpath('../templates/cache'),
-    'auto_reload' => true,
-    'strict_variables' => false,
-    'autoescape' => true
-);
-$app->view->parserExtensions = array(new \Slim\Views\TwigExtension());
-
-// Define routes
-$app->get('/', function () use ($app) {
-
-    $user = UserQuery::create()
-        ->find();
-
-    // Sample log message
-    $app->log->info("Slim-Skeleton '/' route");
-    // Render index view
-    $app->render('index.html');
-});
-
-// Run app
 $app->run();
