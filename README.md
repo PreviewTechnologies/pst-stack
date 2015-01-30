@@ -19,8 +19,25 @@ After you install Composer, run this command from the directory in which you wan
 Replace <code>[your-app-name]</code> with the desired directory name for your new application. You'll want to:
 * Point your virtual host document root to your new application's `public/` directory.
 * Create a new directory 'tmp' in the root of your application and make it writable.
-* Create a database and run the default schema from **propel/generated-sql/schema.sql**.
-* Now copy/paste **generated-conf/config.sample** and rename it to config.php and then change your mysql database credentials.
+
+## Propel Configure
+* Create a database (yourdbname) and run the default schema from **propel/generated-sql/schema.sql**.
+* Now copy/paste **generated-conf/config.sample** and rename it to config.php and then change your mysql database credentials. And replace all `yourdbname` to your `databasename`.
+
+If you want to change your database structure or configuration just you have to work with prople/schema.xml, build.properties, runtime-conf.xml
+
+In schema.xml file go to line #2 and change `database name = "databasename"`
+In build.properties file go to line #1 change `propel.project = "databasename"`
+In runtime-conf.xml file go to line #4 and #5 and change `<datasources default="databasename"><datasource id="databasename">`
+
+now run the following command
+
+```bash
+cd /var/www/html/yourprojectdirectory
+cd propel
+sudo ../vendor/propel/propel/bin/propel sql:build
+sudo ../vendor/propel/propel/bin/propel model:build
+```
 
 That's it! Now go build something cool. Go to your browser and type your application host (according to your virtual host). First it will point you to **http://your-virtual.host/login**
 
