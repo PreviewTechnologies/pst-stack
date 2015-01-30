@@ -6,7 +6,7 @@ composer.lock
 /propel/*
 !/propel/propel.sample
 !/propel/runtime-conf.sample
-!/propel/schema.xml
+!/propel/schema.sample
 
 
 
