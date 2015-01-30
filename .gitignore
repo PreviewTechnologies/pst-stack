@@ -2,9 +2,14 @@
 tmp/*
 .DS_STORE
 composer.lock
-propel/generated-conf/config.php
-propel/build.properties
-propel/runtime-conf.xml
+
+/propel/*
+!/propel/propel.sample
+!/propel/runtime-conf.sample
+!/propel/schema.xml
+
+
+
 /tmp/*
 
 .idea/*
