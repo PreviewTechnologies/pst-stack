@@ -2,18 +2,8 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-6">
-        <textarea class="form-control input-box" rows="3" placeholder="What's on your mind?"></textarea>
-        <input class="btn btn-default post-button" type="submit" value="Post">
-    </div>
-    <div class="col-lg-6">
-        <div class="list-group">
-            <a href="#" class="list-group-item">Dapibus ac facilisis in</a>
-            <a href="#" class="list-group-item">Morbi leo risus</a>
-            <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-            <a href="#" class="list-group-item">Vestibulum at eros</a>
-            <a href="#" class="list-group-item">Vestibulum at eros</a>
-        </div>
+    <div class="col-md-6 col-md-offset-3">
+        <h1>Hello, {{ user.FirstName }} {{ user.LastName }}</h1>
     </div>
 </div>
 {% endblock %}
