@@ -1,6 +1,8 @@
 {% extends 'main-layout.twig' %}
 
 {% block content %}
+
+{% include "flash.twig" %}
 <div class="row">
     <div class="col-md-6 col-md-offset-3">
         <h1>Hello, {{ user.FirstName }} {{ user.LastName }}</h1>

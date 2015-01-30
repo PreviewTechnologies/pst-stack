@@ -1,0 +1,16 @@
+{% if flash.error or flash.info %}
+    <div id="alerts">
+        {% if flash.error %}
+            <div class="alert alert-danger" style="text-align: center;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ flash.error | raw }}
+            </div>
+        {% endif %}
+        {% if flash.info %}
+            <div class="alert alert-info" style="text-align: center;">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ flash.info | raw }}
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

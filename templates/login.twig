@@ -6,6 +6,7 @@
         <p>
             <h3>Login</h3> <hr>
         </p>
+        {% include "flash.twig" %}
         <form action="/login" method="post">
             <div class="form-group">
                 <input name="email" type="text" class="form-control" id="exampleInputEmail1" placeholder="Username">
@@ -15,6 +16,8 @@
             </div>
             <button type="submit" class="btn btn-default login-button">Login</button>
         </form>
+        <br>
+        Don't have account? <a href="/signup">Signup</a>
     </div>
 </div>
 {% endblock %}
