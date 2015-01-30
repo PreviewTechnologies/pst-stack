@@ -5,6 +5,6 @@ composer.lock
 propel/generated-conf/config.php
 propel/build.properties
 propel/runtime-conf.xml
-
+/tmp/*
 
 .idea/*
