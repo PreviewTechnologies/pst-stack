@@ -1,0 +1,22 @@
+[propel]
+;
+; Database section
+;
+database.connections.bookstore.adapter    = mysql
+database.connections.bookstore.classname  = Propel\Runtime\Connection\ConnectionWrapper
+database.connections.bookstore.dsn        = mysql:host=localhost;dbname=my_db_name
+database.connections.bookstore.user       = my_db_user
+database.connections.bookstore.password   = s3cr3t
+database.connections.bookstore.attributes =
+
+;
+; Runtime section
+;
+runtime.defaultConnection = bookstore
+runtime.connections[0]    = bookstore
+
+;
+; Generator section
+;
+generator.defaultConnection = bookstore
+generator.connections[0] = bookstore
