@@ -1,7 +1,5 @@
 /vendor/
-/tmp/*
-tmp/app.log
-!/tmp/README.md
+tmp/*
 .DS_STORE
 composer.lock
 propel/generated-conf/config.php
