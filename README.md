@@ -1,8 +1,8 @@
-# Slim Framework Skeleton Application
+# PST-STACK
 
-Use this skeleton application to quickly setup and start working on a new Slim Framework application. This application uses the latest Slim and Slim-Views repositories. It also uses Sensio Labs' [Twig](http://twig.sensiolabs.org) template library.
+PST (Propel ORM - Slim Framework - Twig Template Engine) Stack in PHP is the most sophisticated stack to quickly build any kinds of PHP applicaiton. This open source application will let you create your application within maximum 120 seconds (2 minutes) without any hassle.
+This stack was first created to quickly build any prototype or any quick but powerful web applicaiton within hour or day and after that I made it open source to make your work more easier.
 
-This skeleton application was built for Composer. This makes setting up a new Slim Framework application quick and easy.
 
 ## Install Composer
 
@@ -12,21 +12,23 @@ If you have not installed Composer, do that now. I prefer to install Composer gl
 
 ## Install the Application
 
-After you install Composer, run this command from the directory in which you want to install your new Slim Framework application.
+After you install Composer, run this command from the directory in which you want to install your new Propel-Slim-Twig Application stack.
 
-    php composer.phar create-project slim/slim-skeleton [my-app-name]
+    php composer.phar create-project previewict/pst-stack [your-app-name]
 
-Replace <code>[my-app-name]</code> with the desired directory name for your new application. You'll want to:
+Replace <code>[your-app-name]</code> with the desired directory name for your new application. You'll want to:
 * Point your virtual host document root to your new application's `public/` directory.
-* Ensure `logs/` and `templates/cache` are web writeable.
+* Create a new directory 'tmp' in the root of your application and make it writable.
+* Create a database and run the default schema from **propel/generated-sql/schema.sql**.
+* Now copy/paste **generated-conf/config.sample** and rename it to config.php and then change your mysql database credentials.
 
-That's it! Now go build something cool.
+That's it! Now go build something cool. Go to your browser and type your application host (according to your virtual host). First it will point you to **http://your-virtual.host/login**
 
 ## How to Contribute
 
 ### Pull Requests
 
-1. Fork the Slim Skeleton repository
+1. Fork the Propel-Slim-Twig Application Stack
 2. Create a new branch for each feature or improvement
 3. Send a pull request from each feature branch to the **develop** branch
 
