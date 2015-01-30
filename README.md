@@ -34,6 +34,8 @@ sudo ../vendor/propel/propel/bin/propel config:convert
 * Again go to your project root and make `/tmp` writable
 ```bash
 cd /var/www/yourprojectdirectory
+#need once more composer install command to autoload newly generated propel classmap
+sudo composer install
 sudo chmod 777 tmp/ -R
 ```
 
