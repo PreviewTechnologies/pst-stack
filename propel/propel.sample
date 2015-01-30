@@ -2,21 +2,21 @@
 ;
 ; Database section
 ;
-database.connections.bookstore.adapter    = mysql
-database.connections.bookstore.classname  = Propel\Runtime\Connection\ConnectionWrapper
-database.connections.bookstore.dsn        = mysql:host=localhost;dbname=my_db_name
-database.connections.bookstore.user       = my_db_user
-database.connections.bookstore.password   = s3cr3t
-database.connections.bookstore.attributes =
+database.connections.yourdbname.adapter    = mysql
+database.connections.yourdbname.classname  = Propel\Runtime\Connection\ConnectionWrapper
+database.connections.yourdbname.dsn        = mysql:host=localhost;dbname=yourdbname
+database.connections.yourdbname.user       = yourdbuser
+database.connections.yourdbname.password   = yourdbpassword
+database.connections.yourdbname.attributes =
 
 ;
 ; Runtime section
 ;
-runtime.defaultConnection = bookstore
-runtime.connections[0]    = bookstore
+runtime.defaultConnection = yourdbname
+runtime.connections[0]    = yourdbname
 
 ;
 ; Generator section
 ;
-generator.defaultConnection = bookstore
-generator.connections[0] = bookstore
+generator.defaultConnection = yourdbname
+generator.connections[0] = yourdbname

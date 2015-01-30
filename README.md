@@ -14,32 +14,30 @@ If you have not installed Composer, do that now. I prefer to install Composer gl
 
 After you install Composer, run this command from the directory in which you want to install your new Propel-Slim-Twig Application stack.
 
-    php composer.phar create-project previewict/pst-stack [your-app-name]
+    sudo composer create-project previewict/pst-stack [your-app-name]
 
 Replace <code>[your-app-name]</code> with the desired directory name for your new application. You'll want to:
 * Point your virtual host document root to your new application's `public/` directory.
-* Create a new directory 'tmp' in the root of your application and make it writable.
-
-## Propel Configure
-* Create a database (yourdbname) and run the default schema from **propel/generated-sql/schema.sql**.
-* Now copy/paste **generated-conf/config.sample** and rename it to config.php and then change your mysql database credentials. And replace all `yourdbname` to your `databasename`.
-
-If you want to change your database structure or configuration just you have to work with prople/schema.xml, build.properties, runtime-conf.xml
-
-In schema.xml file go to line #2 and change `database name = "databasename"`
-In build.properties file go to line #1 change `propel.project = "databasename"`
-In runtime-conf.xml file go to line #4 and #5 and change `<datasources default="databasename"><datasource id="databasename">`
-
-now run the following command
-
+* create a database
+* Need to configure Propel and generate it's ORM classes. For now copy/paste `propel.sample`, `runtime-conf.sample`, `schema.sample` and rename it to `propel.ini`, `runtime-conf.xml`, `schema.xml`
+* Replace all `yourdbname` in `propel.ini`, `runtime-conf.xml` and `schema.xml` file with your new database name. Also replace all `yourdbusename` with your database username and `yourdbpassword` with your database password.
+* Execute `propel/schema.xml` in your database
+* Now need to generate Propel ORM classes by the following command
 ```bash
-cd /var/www/html/yourprojectdirectory
+# go into your project root (/var/www/yourprojectdirectory)
+cd /var/www/yourprojectdirectory
 cd propel
 sudo ../vendor/propel/propel/bin/propel sql:build
 sudo ../vendor/propel/propel/bin/propel model:build
+sudo ../vendor/propel/propel/bin/propel config:convert
+```
+* Again go to your project root and make `/tmp` writable
+```bash
+cd /var/www/yourprojectdirectory
+sudo chmod 777 tmp/ -R
 ```
 
-That's it! Now go build something cool. Go to your browser and type your application host (according to your virtual host). First it will point you to **http://your-virtual.host/login**
+That's it! Now go build something cool. Go to your browser and type your application host (according to your virtual host). First it will point you to **http://your-virtual.host/login**. You can signup and login into the application by yourself.
 
 ## How to Contribute
 
