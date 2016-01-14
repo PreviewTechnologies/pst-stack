@@ -1,14 +1,11 @@
 <?php
-
-define('APP_DIR', __DIR__.DIRECTORY_SEPARATOR);
-
-require 'vendor/autoload.php';
-
-define('APP_DIR', __DIR__.DIRECTORY_SEPARATOR);
+session_start();
 mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 date_default_timezone_set('Asia/Dhaka');
-session_start();
+
+define('APP_DIR', __DIR__ . DIRECTORY_SEPARATOR);
+require 'vendor/autoload.php';
 
 $app = new \Slim\App();
 
@@ -17,13 +14,23 @@ $container = $app->getContainer();
 
 // Register component on container
 $container['view'] = function ($container) {
-    $view = new \Slim\Views\Twig(APP_DIR.'templates', [
-        'cache' => APP_DIR.'tmp/cache'
-    ]);
-    $view->addExtension(new \Slim\Views\TwigExtension(
-        $container['router'],
-        $container['request']->getUri()
-    ));
+    $view = new \Slim\Views\Twig(
+        APP_DIR . 'templates',
+        [
+            'cache' => APP_DIR . 'tmp/cache'
+        ]
+    );
+    $view->addExtension(
+        new \Slim\Views\TwigExtension(
+            $container['router'],
+            $container['request']->getUri()
+        )
+    );
 
     return $view;
+};
+
+// Register flash provider
+$container['flash'] = function () {
+    return new \Slim\Flash\Messages();
 };
