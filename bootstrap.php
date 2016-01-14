@@ -17,7 +17,9 @@ $container['view'] = function ($container) {
     $view = new \Slim\Views\Twig(
         APP_DIR . 'templates',
         [
-            'cache' => APP_DIR . 'tmp/cache'
+            'cache' => APP_DIR . 'tmp/cache',
+            'debug' => true,
+            'auto_reload' => true,
         ]
     );
     $view->addExtension(
