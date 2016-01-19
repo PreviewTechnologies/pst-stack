@@ -1,10 +1,9 @@
 <?php
 
-use Base\UserQuery as BaseUserQuery;
-
+use Base\Book as BaseBook;
 
 /**
- * Skeleton subclass for performing query and update operations on the 'user' table.
+ * Skeleton subclass for representing a row from the 'book' table.
  *
  *
  *
@@ -13,7 +12,7 @@ use Base\UserQuery as BaseUserQuery;
  * long as it does not already exist in the output directory.
  *
  */
-class UserQuery extends BaseUserQuery
+class Book extends BaseBook
 {
 
-} // UserQuery
+}

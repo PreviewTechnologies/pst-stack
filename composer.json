@@ -8,7 +8,7 @@
         "php": ">=5.3.0",
         "monolog/monolog": "1.*",
         "slim/slim": "^3.0",
-        "propel/propel": "2.0.0-alpha2",
+        "propel/propel": "~2.0@dev",
         "ircmaxell/password-compat": "dev-master",
         "respect/validation": "0.9.*@dev",
         "slim/twig-view": "^2.0",

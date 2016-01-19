@@ -1,6 +1,10 @@
 <?php
 
 $app->get('/', function ($request, $response, $args) {
+    $query = new AuthorQuery();
+    $query = $query->findPk(1);
+    var_dump($query);
+    die();
     return $this->view->render($response, 'home.twig',
         [
 

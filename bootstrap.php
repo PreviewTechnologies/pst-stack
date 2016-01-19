@@ -7,6 +7,8 @@ date_default_timezone_set('Asia/Dhaka');
 define('APP_DIR', __DIR__ . DIRECTORY_SEPARATOR);
 require 'vendor/autoload.php';
 
+require_once APP_DIR . 'propel/generated-conf/config.php';
+
 $app = new \Slim\App();
 
 // Get container

@@ -2,30 +2,40 @@
 
 namespace Base;
 
-use \User as ChildUser;
-use \UserQuery as ChildUserQuery;
-use \DateTime;
+use \Author as ChildAuthor;
+use \AuthorQuery as ChildAuthorQuery;
+use \Book as ChildBook;
+use \BookQuery as ChildBookQuery;
 use \Exception;
 use \PDO;
-use Map\UserTableMap;
+use Map\AuthorTableMap;
+use Map\BookTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Collection\Collection;
+use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\BadMethodCallException;
+use Propel\Runtime\Exception\LogicException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
-use Propel\Runtime\Util\PropelDateTime;
 
-abstract class User implements ActiveRecordInterface
+/**
+ * Base class that represents a row from the 'author' table.
+ *
+ *
+ *
+* @package    propel.generator..Base
+*/
+abstract class Author implements ActiveRecordInterface
 {
     /**
      * TableMap class name
      */
-    const TABLE_MAP = '\\Map\\UserTableMap';
+    const TABLE_MAP = '\\Map\\AuthorTableMap';
 
 
     /**
@@ -56,51 +66,30 @@ abstract class User implements ActiveRecordInterface
 
     /**
      * The value for the id field.
+     *
      * @var        int
      */
     protected $id;
 
     /**
-     * The value for the uuid field.
-     * @var        string
-     */
-    protected $uuid;
-
-    /**
-     * The value for the email field.
-     * @var        string
-     */
-    protected $email;
-
-    /**
-     * The value for the password field.
-     * @var        string
-     */
-    protected $password;
-
-    /**
      * The value for the first_name field.
+     *
      * @var        string
      */
     protected $first_name;
 
     /**
      * The value for the last_name field.
+     *
      * @var        string
      */
     protected $last_name;
 
     /**
-     * The value for the created_at field.
-     * @var        string
+     * @var        ObjectCollection|ChildBook[] Collection to store aggregation of ChildBook objects.
      */
-    protected $created_at;
-
-    /**
-     * The value for the updated_at field.
-     * @var        string
-     */
-    protected $updated_at;
+    protected $collBooks;
+    protected $collBooksPartial;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -111,7 +100,13 @@ abstract class User implements ActiveRecordInterface
     protected $alreadyInSave = false;
 
     /**
-     * Initializes internal state of Base\User object.
+     * An array of objects scheduled for deletion.
+     * @var ObjectCollection|ChildBook[]
+     */
+    protected $booksScheduledForDeletion = null;
+
+    /**
+     * Initializes internal state of Base\Author object.
      */
     public function __construct()
     {
@@ -124,7 +119,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function isModified()
     {
-        return !empty($this->modifiedColumns);
+        return !!$this->modifiedColumns;
     }
 
     /**
@@ -135,7 +130,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function isColumnModified($col)
     {
-        return in_array($col, $this->modifiedColumns);
+        return $this->modifiedColumns && isset($this->modifiedColumns[$col]);
     }
 
     /**
@@ -144,7 +139,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function getModifiedColumns()
     {
-        return array_unique($this->modifiedColumns);
+        return $this->modifiedColumns ? array_keys($this->modifiedColumns) : [];
     }
 
     /**
@@ -167,7 +162,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function setNew($b)
     {
-        $this->new = (Boolean) $b;
+        $this->new = (boolean) $b;
     }
 
     /**
@@ -186,7 +181,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function setDeleted($b)
     {
-        $this->deleted = (Boolean) $b;
+        $this->deleted = (boolean) $b;
     }
 
     /**
@@ -197,8 +192,8 @@ abstract class User implements ActiveRecordInterface
     public function resetModified($col = null)
     {
         if (null !== $col) {
-            while (false !== ($offset = array_search($col, $this->modifiedColumns))) {
-                array_splice($this->modifiedColumns, $offset, 1);
+            if (isset($this->modifiedColumns[$col])) {
+                unset($this->modifiedColumns[$col]);
             }
         } else {
             $this->modifiedColumns = array();
@@ -206,17 +201,16 @@ abstract class User implements ActiveRecordInterface
     }
 
     /**
-     * Compares this with another <code>User</code> instance.  If
-     * <code>obj</code> is an instance of <code>User</code>, delegates to
-     * <code>equals(User)</code>.  Otherwise, returns <code>false</code>.
+     * Compares this with another <code>Author</code> instance.  If
+     * <code>obj</code> is an instance of <code>Author</code>, delegates to
+     * <code>equals(Author)</code>.  Otherwise, returns <code>false</code>.
      *
      * @param  mixed   $obj The object to compare to.
      * @return boolean Whether equal to the object specified.
      */
     public function equals($obj)
     {
-        $thisclazz = get_class($this);
-        if (!is_object($obj) || !($obj instanceof $thisclazz)) {
+        if (!$obj instanceof static) {
             return false;
         }
 
@@ -224,27 +218,11 @@ abstract class User implements ActiveRecordInterface
             return true;
         }
 
-        if (null === $this->getPrimaryKey()
-            || null === $obj->getPrimaryKey())  {
+        if (null === $this->getPrimaryKey() || null === $obj->getPrimaryKey()) {
             return false;
         }
 
         return $this->getPrimaryKey() === $obj->getPrimaryKey();
-    }
-
-    /**
-     * If the primary key is not null, return the hashcode of the
-     * primary key. Otherwise, return the hash code of the object.
-     *
-     * @return int Hashcode
-     */
-    public function hashCode()
-    {
-        if (null !== $this->getPrimaryKey()) {
-            return crc32(serialize($this->getPrimaryKey()));
-        }
-
-        return crc32(serialize(clone $this));
     }
 
     /**
@@ -291,7 +269,7 @@ abstract class User implements ActiveRecordInterface
      * @param string $name  The virtual column name
      * @param mixed  $value The value to give to the virtual column
      *
-     * @return User The current object, for fluid interface
+     * @return $this|Author The current object, for fluid interface
      */
     public function setVirtualColumn($name, $value)
     {
@@ -310,30 +288,6 @@ abstract class User implements ActiveRecordInterface
     protected function log($msg, $priority = Propel::LOG_INFO)
     {
         return Propel::log(get_class($this) . ': ' . $msg, $priority);
-    }
-
-    /**
-     * Populate the current object from a string, using a given parser format
-     * <code>
-     * $book = new Book();
-     * $book->importFrom('JSON', '{"Id":9012,"Title":"Don Juan","ISBN":"0140422161","Price":12.99,"PublisherId":1234,"AuthorId":5678}');
-     * </code>
-     *
-     * @param mixed $parser A AbstractParser instance,
-     *                       or a format name ('XML', 'YAML', 'JSON', 'CSV')
-     * @param string $data The source data to import from
-     *
-     * @return User The current object, for fluid interface
-     */
-    public function importFrom($parser, $data)
-    {
-        if (!$parser instanceof AbstractParser) {
-            $parser = AbstractParser::getParser($parser);
-        }
-
-        $this->fromArray($parser->toArray($data), TableMap::TYPE_PHPNAME);
-
-        return $this;
     }
 
     /**
@@ -365,122 +319,54 @@ abstract class User implements ActiveRecordInterface
     {
         $this->clearAllReferences();
 
-        return array_keys(get_object_vars($this));
+        $cls = new \ReflectionClass($this);
+        $propertyNames = [];
+        $serializableProperties = array_diff($cls->getProperties(), $cls->getProperties(\ReflectionProperty::IS_STATIC));
+
+        foreach($serializableProperties as $property) {
+            $propertyNames[] = $property->getName();
+        }
+
+        return $propertyNames;
     }
 
     /**
      * Get the [id] column value.
      *
-     * @return   int
+     * @return int
      */
-    public function getID()
+    public function getId()
     {
-
         return $this->id;
-    }
-
-    /**
-     * Get the [uuid] column value.
-     *
-     * @return   string
-     */
-    public function getUUID()
-    {
-
-        return $this->uuid;
-    }
-
-    /**
-     * Get the [email] column value.
-     *
-     * @return   string
-     */
-    public function getEmailAddress()
-    {
-
-        return $this->email;
-    }
-
-    /**
-     * Get the [password] column value.
-     *
-     * @return   string
-     */
-    public function getPassword()
-    {
-
-        return $this->password;
     }
 
     /**
      * Get the [first_name] column value.
      *
-     * @return   string
+     * @return string
      */
     public function getFirstName()
     {
-
         return $this->first_name;
     }
 
     /**
      * Get the [last_name] column value.
      *
-     * @return   string
+     * @return string
      */
     public function getLastName()
     {
-
         return $this->last_name;
-    }
-
-    /**
-     * Get the [optionally formatted] temporal [created_at] column value.
-     *
-     *
-     * @param      string $format The date/time format string (either date()-style or strftime()-style).
-     *                            If format is NULL, then the raw \DateTime object will be returned.
-     *
-     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
-     *
-     * @throws PropelException - if unable to parse/validate the date/time value.
-     */
-    public function getCreatedAt($format = NULL)
-    {
-        if ($format === null) {
-            return $this->created_at;
-        } else {
-            return $this->created_at instanceof \DateTime ? $this->created_at->format($format) : null;
-        }
-    }
-
-    /**
-     * Get the [optionally formatted] temporal [updated_at] column value.
-     *
-     *
-     * @param      string $format The date/time format string (either date()-style or strftime()-style).
-     *                            If format is NULL, then the raw \DateTime object will be returned.
-     *
-     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
-     *
-     * @throws PropelException - if unable to parse/validate the date/time value.
-     */
-    public function getUpdatedAt($format = NULL)
-    {
-        if ($format === null) {
-            return $this->updated_at;
-        } else {
-            return $this->updated_at instanceof \DateTime ? $this->updated_at->format($format) : null;
-        }
     }
 
     /**
      * Set the value of [id] column.
      *
-     * @param      int $v new value
-     * @return   \User The current object (for fluent API support)
+     * @param int $v new value
+     * @return $this|\Author The current object (for fluent API support)
      */
-    public function setID($v)
+    public function setId($v)
     {
         if ($v !== null) {
             $v = (int) $v;
@@ -488,81 +374,17 @@ abstract class User implements ActiveRecordInterface
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[] = UserTableMap::ID;
+            $this->modifiedColumns[AuthorTableMap::COL_ID] = true;
         }
-
 
         return $this;
-    } // setID()
-
-    /**
-     * Set the value of [uuid] column.
-     *
-     * @param      string $v new value
-     * @return   \User The current object (for fluent API support)
-     */
-    public function setUUID($v)
-    {
-        if ($v !== null) {
-            $v = (string) $v;
-        }
-
-        if ($this->uuid !== $v) {
-            $this->uuid = $v;
-            $this->modifiedColumns[] = UserTableMap::UUID;
-        }
-
-
-        return $this;
-    } // setUUID()
-
-    /**
-     * Set the value of [email] column.
-     *
-     * @param      string $v new value
-     * @return   \User The current object (for fluent API support)
-     */
-    public function setEmailAddress($v)
-    {
-        if ($v !== null) {
-            $v = (string) $v;
-        }
-
-        if ($this->email !== $v) {
-            $this->email = $v;
-            $this->modifiedColumns[] = UserTableMap::EMAIL;
-        }
-
-
-        return $this;
-    } // setEmailAddress()
-
-    /**
-     * Set the value of [password] column.
-     *
-     * @param      string $v new value
-     * @return   \User The current object (for fluent API support)
-     */
-    public function setPassword($v)
-    {
-        if ($v !== null) {
-            $v = (string) $v;
-        }
-
-        if ($this->password !== $v) {
-            $this->password = $v;
-            $this->modifiedColumns[] = UserTableMap::PASSWORD;
-        }
-
-
-        return $this;
-    } // setPassword()
+    } // setId()
 
     /**
      * Set the value of [first_name] column.
      *
-     * @param      string $v new value
-     * @return   \User The current object (for fluent API support)
+     * @param string $v new value
+     * @return $this|\Author The current object (for fluent API support)
      */
     public function setFirstName($v)
     {
@@ -572,9 +394,8 @@ abstract class User implements ActiveRecordInterface
 
         if ($this->first_name !== $v) {
             $this->first_name = $v;
-            $this->modifiedColumns[] = UserTableMap::FIRST_NAME;
+            $this->modifiedColumns[AuthorTableMap::COL_FIRST_NAME] = true;
         }
-
 
         return $this;
     } // setFirstName()
@@ -582,8 +403,8 @@ abstract class User implements ActiveRecordInterface
     /**
      * Set the value of [last_name] column.
      *
-     * @param      string $v new value
-     * @return   \User The current object (for fluent API support)
+     * @param string $v new value
+     * @return $this|\Author The current object (for fluent API support)
      */
     public function setLastName($v)
     {
@@ -593,54 +414,11 @@ abstract class User implements ActiveRecordInterface
 
         if ($this->last_name !== $v) {
             $this->last_name = $v;
-            $this->modifiedColumns[] = UserTableMap::LAST_NAME;
+            $this->modifiedColumns[AuthorTableMap::COL_LAST_NAME] = true;
         }
-
 
         return $this;
     } // setLastName()
-
-    /**
-     * Sets the value of [created_at] column to a normalized version of the date/time value specified.
-     *
-     * @param      mixed $v string, integer (timestamp), or \DateTime value.
-     *               Empty strings are treated as NULL.
-     * @return   \User The current object (for fluent API support)
-     */
-    public function setCreatedAt($v)
-    {
-        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
-        if ($this->created_at !== null || $dt !== null) {
-            if ($dt !== $this->created_at) {
-                $this->created_at = $dt;
-                $this->modifiedColumns[] = UserTableMap::CREATED_AT;
-            }
-        } // if either are not null
-
-
-        return $this;
-    } // setCreatedAt()
-
-    /**
-     * Sets the value of [updated_at] column to a normalized version of the date/time value specified.
-     *
-     * @param      mixed $v string, integer (timestamp), or \DateTime value.
-     *               Empty strings are treated as NULL.
-     * @return   \User The current object (for fluent API support)
-     */
-    public function setUpdatedAt($v)
-    {
-        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
-        if ($this->updated_at !== null || $dt !== null) {
-            if ($dt !== $this->updated_at) {
-                $this->updated_at = $dt;
-                $this->modifiedColumns[] = UserTableMap::UPDATED_AT;
-            }
-        } // if either are not null
-
-
-        return $this;
-    } // setUpdatedAt()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -668,7 +446,7 @@ abstract class User implements ActiveRecordInterface
      * @param int     $startcol  0-based offset column which indicates which restultset column to start with.
      * @param boolean $rehydrate Whether this object is being re-hydrated from the database.
      * @param string  $indexType The index type of $row. Mostly DataFetcher->getIndexType().
-                                  One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_STUDLYPHPNAME
+                                  One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                            TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *
      * @return int             next starting column
@@ -678,36 +456,14 @@ abstract class User implements ActiveRecordInterface
     {
         try {
 
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : UserTableMap::translateFieldName('ID', TableMap::TYPE_PHPNAME, $indexType)];
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : AuthorTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
             $this->id = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : UserTableMap::translateFieldName('UUID', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->uuid = (null !== $col) ? (string) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : UserTableMap::translateFieldName('EmailAddress', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->email = (null !== $col) ? (string) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : UserTableMap::translateFieldName('Password', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->password = (null !== $col) ? (string) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : UserTableMap::translateFieldName('FirstName', TableMap::TYPE_PHPNAME, $indexType)];
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : AuthorTableMap::translateFieldName('FirstName', TableMap::TYPE_PHPNAME, $indexType)];
             $this->first_name = (null !== $col) ? (string) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 5 + $startcol : UserTableMap::translateFieldName('LastName', TableMap::TYPE_PHPNAME, $indexType)];
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : AuthorTableMap::translateFieldName('LastName', TableMap::TYPE_PHPNAME, $indexType)];
             $this->last_name = (null !== $col) ? (string) $col : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 6 + $startcol : UserTableMap::translateFieldName('CreatedAt', TableMap::TYPE_PHPNAME, $indexType)];
-            if ($col === '0000-00-00 00:00:00') {
-                $col = null;
-            }
-            $this->created_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
-
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 7 + $startcol : UserTableMap::translateFieldName('UpdatedAt', TableMap::TYPE_PHPNAME, $indexType)];
-            if ($col === '0000-00-00 00:00:00') {
-                $col = null;
-            }
-            $this->updated_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -716,10 +472,10 @@ abstract class User implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 8; // 8 = UserTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 3; // 3 = AuthorTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException("Error populating \User object", 0, $e);
+            throw new PropelException(sprintf('Error populating %s object', '\\Author'), 0, $e);
         }
     }
 
@@ -761,13 +517,13 @@ abstract class User implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getReadConnection(UserTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getReadConnection(AuthorTableMap::DATABASE_NAME);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $dataFetcher = ChildUserQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
+        $dataFetcher = ChildAuthorQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
         $row = $dataFetcher->fetch();
         $dataFetcher->close();
         if (!$row) {
@@ -776,6 +532,8 @@ abstract class User implements ActiveRecordInterface
         $this->hydrate($row, 0, true, $dataFetcher->getIndexType()); // rehydrate
 
         if ($deep) {  // also de-associate any related objects?
+
+            $this->collBooks = null;
 
         } // if (deep)
     }
@@ -786,8 +544,8 @@ abstract class User implements ActiveRecordInterface
      * @param      ConnectionInterface $con
      * @return void
      * @throws PropelException
-     * @see User::setDeleted()
-     * @see User::isDeleted()
+     * @see Author::setDeleted()
+     * @see Author::isDeleted()
      */
     public function delete(ConnectionInterface $con = null)
     {
@@ -796,26 +554,19 @@ abstract class User implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(UserTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(AuthorTableMap::DATABASE_NAME);
         }
 
-        $con->beginTransaction();
-        try {
-            $deleteQuery = ChildUserQuery::create()
+        $con->transaction(function () use ($con) {
+            $deleteQuery = ChildAuthorQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
                 $deleteQuery->delete($con);
                 $this->postDelete($con);
-                $con->commit();
                 $this->setDeleted(true);
-            } else {
-                $con->commit();
             }
-        } catch (Exception $e) {
-            $con->rollBack();
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -838,28 +589,16 @@ abstract class User implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(UserTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(AuthorTableMap::DATABASE_NAME);
         }
 
-        $con->beginTransaction();
-        $isInsert = $this->isNew();
-        try {
+        return $con->transaction(function () use ($con) {
+            $isInsert = $this->isNew();
             $ret = $this->preSave($con);
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
-                // timestampable behavior
-                if (!$this->isColumnModified(UserTableMap::CREATED_AT)) {
-                    $this->setCreatedAt(time());
-                }
-                if (!$this->isColumnModified(UserTableMap::UPDATED_AT)) {
-                    $this->setUpdatedAt(time());
-                }
             } else {
                 $ret = $ret && $this->preUpdate($con);
-                // timestampable behavior
-                if ($this->isModified() && !$this->isColumnModified(UserTableMap::UPDATED_AT)) {
-                    $this->setUpdatedAt(time());
-                }
             }
             if ($ret) {
                 $affectedRows = $this->doSave($con);
@@ -869,17 +608,13 @@ abstract class User implements ActiveRecordInterface
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                UserTableMap::addInstanceToPool($this);
+                AuthorTableMap::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
-            $con->commit();
 
             return $affectedRows;
-        } catch (Exception $e) {
-            $con->rollBack();
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -903,11 +638,28 @@ abstract class User implements ActiveRecordInterface
                 // persist changes
                 if ($this->isNew()) {
                     $this->doInsert($con);
+                    $affectedRows += 1;
                 } else {
-                    $this->doUpdate($con);
+                    $affectedRows += $this->doUpdate($con);
                 }
-                $affectedRows += 1;
                 $this->resetModified();
+            }
+
+            if ($this->booksScheduledForDeletion !== null) {
+                if (!$this->booksScheduledForDeletion->isEmpty()) {
+                    \BookQuery::create()
+                        ->filterByPrimaryKeys($this->booksScheduledForDeletion->getPrimaryKeys(false))
+                        ->delete($con);
+                    $this->booksScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collBooks !== null) {
+                foreach ($this->collBooks as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
             }
 
             $this->alreadyInSave = false;
@@ -930,39 +682,24 @@ abstract class User implements ActiveRecordInterface
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[] = UserTableMap::ID;
+        $this->modifiedColumns[AuthorTableMap::COL_ID] = true;
         if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . UserTableMap::ID . ')');
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . AuthorTableMap::COL_ID . ')');
         }
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(UserTableMap::ID)) {
-            $modifiedColumns[':p' . $index++]  = 'ID';
+        if ($this->isColumnModified(AuthorTableMap::COL_ID)) {
+            $modifiedColumns[':p' . $index++]  = 'id';
         }
-        if ($this->isColumnModified(UserTableMap::UUID)) {
-            $modifiedColumns[':p' . $index++]  = 'UUID';
+        if ($this->isColumnModified(AuthorTableMap::COL_FIRST_NAME)) {
+            $modifiedColumns[':p' . $index++]  = 'first_name';
         }
-        if ($this->isColumnModified(UserTableMap::EMAIL)) {
-            $modifiedColumns[':p' . $index++]  = 'EMAIL';
-        }
-        if ($this->isColumnModified(UserTableMap::PASSWORD)) {
-            $modifiedColumns[':p' . $index++]  = 'PASSWORD';
-        }
-        if ($this->isColumnModified(UserTableMap::FIRST_NAME)) {
-            $modifiedColumns[':p' . $index++]  = 'FIRST_NAME';
-        }
-        if ($this->isColumnModified(UserTableMap::LAST_NAME)) {
-            $modifiedColumns[':p' . $index++]  = 'LAST_NAME';
-        }
-        if ($this->isColumnModified(UserTableMap::CREATED_AT)) {
-            $modifiedColumns[':p' . $index++]  = 'CREATED_AT';
-        }
-        if ($this->isColumnModified(UserTableMap::UPDATED_AT)) {
-            $modifiedColumns[':p' . $index++]  = 'UPDATED_AT';
+        if ($this->isColumnModified(AuthorTableMap::COL_LAST_NAME)) {
+            $modifiedColumns[':p' . $index++]  = 'last_name';
         }
 
         $sql = sprintf(
-            'INSERT INTO user (%s) VALUES (%s)',
+            'INSERT INTO author (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -971,29 +708,14 @@ abstract class User implements ActiveRecordInterface
             $stmt = $con->prepare($sql);
             foreach ($modifiedColumns as $identifier => $columnName) {
                 switch ($columnName) {
-                    case 'ID':
+                    case 'id':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case 'UUID':
-                        $stmt->bindValue($identifier, $this->uuid, PDO::PARAM_STR);
-                        break;
-                    case 'EMAIL':
-                        $stmt->bindValue($identifier, $this->email, PDO::PARAM_STR);
-                        break;
-                    case 'PASSWORD':
-                        $stmt->bindValue($identifier, $this->password, PDO::PARAM_STR);
-                        break;
-                    case 'FIRST_NAME':
+                    case 'first_name':
                         $stmt->bindValue($identifier, $this->first_name, PDO::PARAM_STR);
                         break;
-                    case 'LAST_NAME':
+                    case 'last_name':
                         $stmt->bindValue($identifier, $this->last_name, PDO::PARAM_STR);
-                        break;
-                    case 'CREATED_AT':
-                        $stmt->bindValue($identifier, $this->created_at ? $this->created_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
-                        break;
-                    case 'UPDATED_AT':
-                        $stmt->bindValue($identifier, $this->updated_at ? $this->updated_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -1008,7 +730,7 @@ abstract class User implements ActiveRecordInterface
         } catch (Exception $e) {
             throw new PropelException('Unable to get autoincrement id.', 0, $e);
         }
-        $this->setID($pk);
+        $this->setId($pk);
 
         $this->setNew(false);
     }
@@ -1034,14 +756,14 @@ abstract class User implements ActiveRecordInterface
      *
      * @param      string $name name
      * @param      string $type The type of fieldname the $name is of:
-     *                     one of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_STUDLYPHPNAME
+     *                     one of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
      *                     TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *                     Defaults to TableMap::TYPE_PHPNAME.
      * @return mixed Value of field.
      */
     public function getByName($name, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = UserTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = AuthorTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -1058,28 +780,13 @@ abstract class User implements ActiveRecordInterface
     {
         switch ($pos) {
             case 0:
-                return $this->getID();
+                return $this->getId();
                 break;
             case 1:
-                return $this->getUUID();
-                break;
-            case 2:
-                return $this->getEmailAddress();
-                break;
-            case 3:
-                return $this->getPassword();
-                break;
-            case 4:
                 return $this->getFirstName();
                 break;
-            case 5:
+            case 2:
                 return $this->getLastName();
-                break;
-            case 6:
-                return $this->getCreatedAt();
-                break;
-            case 7:
-                return $this->getUpdatedAt();
                 break;
             default:
                 return null;
@@ -1093,36 +800,50 @@ abstract class User implements ActiveRecordInterface
      * You can specify the key type of the array by passing one of the class
      * type constants.
      *
-     * @param     string  $keyType (optional) One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_STUDLYPHPNAME,
+     * @param     string  $keyType (optional) One of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME,
      *                    TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      *                    Defaults to TableMap::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to TRUE.
      * @param     array $alreadyDumpedObjects List of objects to skip to avoid recursion
+     * @param     boolean $includeForeignObjects (optional) Whether to include hydrated related objects. Default to FALSE.
      *
      * @return array an associative array containing the field names (as keys) and field values
      */
-    public function toArray($keyType = TableMap::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
+    public function toArray($keyType = TableMap::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
-        if (isset($alreadyDumpedObjects['User'][$this->getPrimaryKey()])) {
+
+        if (isset($alreadyDumpedObjects['Author'][$this->hashCode()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['User'][$this->getPrimaryKey()] = true;
-        $keys = UserTableMap::getFieldNames($keyType);
+        $alreadyDumpedObjects['Author'][$this->hashCode()] = true;
+        $keys = AuthorTableMap::getFieldNames($keyType);
         $result = array(
-            $keys[0] => $this->getID(),
-            $keys[1] => $this->getUUID(),
-            $keys[2] => $this->getEmailAddress(),
-            $keys[3] => $this->getPassword(),
-            $keys[4] => $this->getFirstName(),
-            $keys[5] => $this->getLastName(),
-            $keys[6] => $this->getCreatedAt(),
-            $keys[7] => $this->getUpdatedAt(),
+            $keys[0] => $this->getId(),
+            $keys[1] => $this->getFirstName(),
+            $keys[2] => $this->getLastName(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
             $result[$key] = $virtualColumn;
         }
 
+        if ($includeForeignObjects) {
+            if (null !== $this->collBooks) {
+
+                switch ($keyType) {
+                    case TableMap::TYPE_CAMELNAME:
+                        $key = 'books';
+                        break;
+                    case TableMap::TYPE_FIELDNAME:
+                        $key = 'books';
+                        break;
+                    default:
+                        $key = 'Books';
+                }
+
+                $result[$key] = $this->collBooks->toArray(null, false, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+        }
 
         return $result;
     }
@@ -1130,17 +851,17 @@ abstract class User implements ActiveRecordInterface
     /**
      * Sets a field from the object by name passed in as a string.
      *
-     * @param      string $name
-     * @param      mixed  $value field value
-     * @param      string $type The type of fieldname the $name is of:
-     *                     one of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_STUDLYPHPNAME
-     *                     TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
-     *                     Defaults to TableMap::TYPE_PHPNAME.
-     * @return void
+     * @param  string $name
+     * @param  mixed  $value field value
+     * @param  string $type The type of fieldname the $name is of:
+     *                one of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME
+     *                TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
+     *                Defaults to TableMap::TYPE_PHPNAME.
+     * @return $this|\Author
      */
     public function setByName($name, $value, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = UserTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = AuthorTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
 
         return $this->setByPosition($pos, $value);
     }
@@ -1149,38 +870,25 @@ abstract class User implements ActiveRecordInterface
      * Sets a field from the object by Position as specified in the xml schema.
      * Zero-based.
      *
-     * @param      int $pos position in xml schema
-     * @param      mixed $value field value
-     * @return void
+     * @param  int $pos position in xml schema
+     * @param  mixed $value field value
+     * @return $this|\Author
      */
     public function setByPosition($pos, $value)
     {
         switch ($pos) {
             case 0:
-                $this->setID($value);
+                $this->setId($value);
                 break;
             case 1:
-                $this->setUUID($value);
-                break;
-            case 2:
-                $this->setEmailAddress($value);
-                break;
-            case 3:
-                $this->setPassword($value);
-                break;
-            case 4:
                 $this->setFirstName($value);
                 break;
-            case 5:
+            case 2:
                 $this->setLastName($value);
                 break;
-            case 6:
-                $this->setCreatedAt($value);
-                break;
-            case 7:
-                $this->setUpdatedAt($value);
-                break;
         } // switch()
+
+        return $this;
     }
 
     /**
@@ -1192,7 +900,7 @@ abstract class User implements ActiveRecordInterface
      * array. If so the setByName() method is called for that column.
      *
      * You can specify the key type of the array by additionally passing one
-     * of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_STUDLYPHPNAME,
+     * of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME,
      * TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
      * The default key type is the column's TableMap::TYPE_PHPNAME.
      *
@@ -1202,16 +910,47 @@ abstract class User implements ActiveRecordInterface
      */
     public function fromArray($arr, $keyType = TableMap::TYPE_PHPNAME)
     {
-        $keys = UserTableMap::getFieldNames($keyType);
+        $keys = AuthorTableMap::getFieldNames($keyType);
 
-        if (array_key_exists($keys[0], $arr)) $this->setID($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setUUID($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setEmailAddress($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setPassword($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setFirstName($arr[$keys[4]]);
-        if (array_key_exists($keys[5], $arr)) $this->setLastName($arr[$keys[5]]);
-        if (array_key_exists($keys[6], $arr)) $this->setCreatedAt($arr[$keys[6]]);
-        if (array_key_exists($keys[7], $arr)) $this->setUpdatedAt($arr[$keys[7]]);
+        if (array_key_exists($keys[0], $arr)) {
+            $this->setId($arr[$keys[0]]);
+        }
+        if (array_key_exists($keys[1], $arr)) {
+            $this->setFirstName($arr[$keys[1]]);
+        }
+        if (array_key_exists($keys[2], $arr)) {
+            $this->setLastName($arr[$keys[2]]);
+        }
+    }
+
+     /**
+     * Populate the current object from a string, using a given parser format
+     * <code>
+     * $book = new Book();
+     * $book->importFrom('JSON', '{"Id":9012,"Title":"Don Juan","ISBN":"0140422161","Price":12.99,"PublisherId":1234,"AuthorId":5678}');
+     * </code>
+     *
+     * You can specify the key type of the array by additionally passing one
+     * of the class type constants TableMap::TYPE_PHPNAME, TableMap::TYPE_CAMELNAME,
+     * TableMap::TYPE_COLNAME, TableMap::TYPE_FIELDNAME, TableMap::TYPE_NUM.
+     * The default key type is the column's TableMap::TYPE_PHPNAME.
+     *
+     * @param mixed $parser A AbstractParser instance,
+     *                       or a format name ('XML', 'YAML', 'JSON', 'CSV')
+     * @param string $data The source data to import from
+     * @param string $keyType The type of keys the array uses.
+     *
+     * @return $this|\Author The current object, for fluid interface
+     */
+    public function importFrom($parser, $data, $keyType = TableMap::TYPE_PHPNAME)
+    {
+        if (!$parser instanceof AbstractParser) {
+            $parser = AbstractParser::getParser($parser);
+        }
+
+        $this->fromArray($parser->toArray($data), $keyType);
+
+        return $this;
     }
 
     /**
@@ -1221,16 +960,17 @@ abstract class User implements ActiveRecordInterface
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(UserTableMap::DATABASE_NAME);
+        $criteria = new Criteria(AuthorTableMap::DATABASE_NAME);
 
-        if ($this->isColumnModified(UserTableMap::ID)) $criteria->add(UserTableMap::ID, $this->id);
-        if ($this->isColumnModified(UserTableMap::UUID)) $criteria->add(UserTableMap::UUID, $this->uuid);
-        if ($this->isColumnModified(UserTableMap::EMAIL)) $criteria->add(UserTableMap::EMAIL, $this->email);
-        if ($this->isColumnModified(UserTableMap::PASSWORD)) $criteria->add(UserTableMap::PASSWORD, $this->password);
-        if ($this->isColumnModified(UserTableMap::FIRST_NAME)) $criteria->add(UserTableMap::FIRST_NAME, $this->first_name);
-        if ($this->isColumnModified(UserTableMap::LAST_NAME)) $criteria->add(UserTableMap::LAST_NAME, $this->last_name);
-        if ($this->isColumnModified(UserTableMap::CREATED_AT)) $criteria->add(UserTableMap::CREATED_AT, $this->created_at);
-        if ($this->isColumnModified(UserTableMap::UPDATED_AT)) $criteria->add(UserTableMap::UPDATED_AT, $this->updated_at);
+        if ($this->isColumnModified(AuthorTableMap::COL_ID)) {
+            $criteria->add(AuthorTableMap::COL_ID, $this->id);
+        }
+        if ($this->isColumnModified(AuthorTableMap::COL_FIRST_NAME)) {
+            $criteria->add(AuthorTableMap::COL_FIRST_NAME, $this->first_name);
+        }
+        if ($this->isColumnModified(AuthorTableMap::COL_LAST_NAME)) {
+            $criteria->add(AuthorTableMap::COL_LAST_NAME, $this->last_name);
+        }
 
         return $criteria;
     }
@@ -1241,23 +981,47 @@ abstract class User implements ActiveRecordInterface
      * Unlike buildCriteria() this method includes the primary key values regardless
      * of whether or not they have been modified.
      *
+     * @throws LogicException if no primary key is defined
+     *
      * @return Criteria The Criteria object containing value(s) for primary key(s).
      */
     public function buildPkeyCriteria()
     {
-        $criteria = new Criteria(UserTableMap::DATABASE_NAME);
-        $criteria->add(UserTableMap::ID, $this->id);
+        $criteria = ChildAuthorQuery::create();
+        $criteria->add(AuthorTableMap::COL_ID, $this->id);
 
         return $criteria;
     }
 
     /**
+     * If the primary key is not null, return the hashcode of the
+     * primary key. Otherwise, return the hash code of the object.
+     *
+     * @return int Hashcode
+     */
+    public function hashCode()
+    {
+        $validPk = null !== $this->getId();
+
+        $validPrimaryKeyFKs = 0;
+        $primaryKeyFKs = [];
+
+        if ($validPk) {
+            return crc32(json_encode($this->getPrimaryKey(), JSON_UNESCAPED_UNICODE));
+        } elseif ($validPrimaryKeyFKs) {
+            return crc32(json_encode($primaryKeyFKs, JSON_UNESCAPED_UNICODE));
+        }
+
+        return spl_object_hash($this);
+    }
+
+    /**
      * Returns the primary key for this object (row).
-     * @return   int
+     * @return int
      */
     public function getPrimaryKey()
     {
-        return $this->getID();
+        return $this->getId();
     }
 
     /**
@@ -1268,7 +1032,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function setPrimaryKey($key)
     {
-        $this->setID($key);
+        $this->setId($key);
     }
 
     /**
@@ -1277,8 +1041,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function isPrimaryKeyNull()
     {
-
-        return null === $this->getID();
+        return null === $this->getId();
     }
 
     /**
@@ -1287,23 +1050,32 @@ abstract class User implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param      object $copyObj An object of \User (or compatible) type.
+     * @param      object $copyObj An object of \Author (or compatible) type.
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param      boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setUUID($this->getUUID());
-        $copyObj->setEmailAddress($this->getEmailAddress());
-        $copyObj->setPassword($this->getPassword());
         $copyObj->setFirstName($this->getFirstName());
         $copyObj->setLastName($this->getLastName());
-        $copyObj->setCreatedAt($this->getCreatedAt());
-        $copyObj->setUpdatedAt($this->getUpdatedAt());
+
+        if ($deepCopy) {
+            // important: temporarily setNew(false) because this affects the behavior of
+            // the getter/setter methods for fkey referrer objects.
+            $copyObj->setNew(false);
+
+            foreach ($this->getBooks() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addBook($relObj->copy($deepCopy));
+                }
+            }
+
+        } // if ($deepCopy)
+
         if ($makeNew) {
             $copyObj->setNew(true);
-            $copyObj->setID(NULL); // this is a auto-increment column, so set to default value
+            $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
         }
     }
 
@@ -1315,8 +1087,8 @@ abstract class User implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return                 \User Clone of current object.
+     * @param  boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
+     * @return \Author Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1329,19 +1101,282 @@ abstract class User implements ActiveRecordInterface
         return $copyObj;
     }
 
+
     /**
-     * Clears the current object and sets all attributes to their default values
+     * Initializes a collection based on the name of a relation.
+     * Avoids crafting an 'init[$relationName]s' method name
+     * that wouldn't work when StandardEnglishPluralizer is used.
+     *
+     * @param      string $relationName The name of the relation to initialize
+     * @return void
+     */
+    public function initRelation($relationName)
+    {
+        if ('Book' == $relationName) {
+            return $this->initBooks();
+        }
+    }
+
+    /**
+     * Clears out the collBooks collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return void
+     * @see        addBooks()
+     */
+    public function clearBooks()
+    {
+        $this->collBooks = null; // important to set this to NULL since that means it is uninitialized
+    }
+
+    /**
+     * Reset is the collBooks collection loaded partially.
+     */
+    public function resetPartialBooks($v = true)
+    {
+        $this->collBooksPartial = $v;
+    }
+
+    /**
+     * Initializes the collBooks collection.
+     *
+     * By default this just sets the collBooks collection to an empty array (like clearcollBooks());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param      boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initBooks($overrideExisting = true)
+    {
+        if (null !== $this->collBooks && !$overrideExisting) {
+            return;
+        }
+
+        $collectionClassName = BookTableMap::getTableMap()->getCollectionClassName();
+
+        $this->collBooks = new $collectionClassName;
+        $this->collBooks->setModel('\Book');
+    }
+
+    /**
+     * Gets an array of ChildBook objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this ChildAuthor is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param      Criteria $criteria optional Criteria object to narrow the query
+     * @param      ConnectionInterface $con optional connection object
+     * @return ObjectCollection|ChildBook[] List of ChildBook objects
+     * @throws PropelException
+     */
+    public function getBooks(Criteria $criteria = null, ConnectionInterface $con = null)
+    {
+        $partial = $this->collBooksPartial && !$this->isNew();
+        if (null === $this->collBooks || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collBooks) {
+                // return empty collection
+                $this->initBooks();
+            } else {
+                $collBooks = ChildBookQuery::create(null, $criteria)
+                    ->filterByAuthor($this)
+                    ->find($con);
+
+                if (null !== $criteria) {
+                    if (false !== $this->collBooksPartial && count($collBooks)) {
+                        $this->initBooks(false);
+
+                        foreach ($collBooks as $obj) {
+                            if (false == $this->collBooks->contains($obj)) {
+                                $this->collBooks->append($obj);
+                            }
+                        }
+
+                        $this->collBooksPartial = true;
+                    }
+
+                    return $collBooks;
+                }
+
+                if ($partial && $this->collBooks) {
+                    foreach ($this->collBooks as $obj) {
+                        if ($obj->isNew()) {
+                            $collBooks[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collBooks = $collBooks;
+                $this->collBooksPartial = false;
+            }
+        }
+
+        return $this->collBooks;
+    }
+
+    /**
+     * Sets a collection of ChildBook objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param      Collection $books A Propel collection.
+     * @param      ConnectionInterface $con Optional connection object
+     * @return $this|ChildAuthor The current object (for fluent API support)
+     */
+    public function setBooks(Collection $books, ConnectionInterface $con = null)
+    {
+        /** @var ChildBook[] $booksToDelete */
+        $booksToDelete = $this->getBooks(new Criteria(), $con)->diff($books);
+
+
+        $this->booksScheduledForDeletion = $booksToDelete;
+
+        foreach ($booksToDelete as $bookRemoved) {
+            $bookRemoved->setAuthor(null);
+        }
+
+        $this->collBooks = null;
+        foreach ($books as $book) {
+            $this->addBook($book);
+        }
+
+        $this->collBooks = $books;
+        $this->collBooksPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Book objects.
+     *
+     * @param      Criteria $criteria
+     * @param      boolean $distinct
+     * @param      ConnectionInterface $con
+     * @return int             Count of related Book objects.
+     * @throws PropelException
+     */
+    public function countBooks(Criteria $criteria = null, $distinct = false, ConnectionInterface $con = null)
+    {
+        $partial = $this->collBooksPartial && !$this->isNew();
+        if (null === $this->collBooks || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collBooks) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getBooks());
+            }
+
+            $query = ChildBookQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByAuthor($this)
+                ->count($con);
+        }
+
+        return count($this->collBooks);
+    }
+
+    /**
+     * Method called to associate a ChildBook object to this object
+     * through the ChildBook foreign key attribute.
+     *
+     * @param  ChildBook $l ChildBook
+     * @return $this|\Author The current object (for fluent API support)
+     */
+    public function addBook(ChildBook $l)
+    {
+        if ($this->collBooks === null) {
+            $this->initBooks();
+            $this->collBooksPartial = true;
+        }
+
+        if (!$this->collBooks->contains($l)) {
+            $this->doAddBook($l);
+
+            if ($this->booksScheduledForDeletion and $this->booksScheduledForDeletion->contains($l)) {
+                $this->booksScheduledForDeletion->remove($this->booksScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param ChildBook $book The ChildBook object to add.
+     */
+    protected function doAddBook(ChildBook $book)
+    {
+        $this->collBooks[]= $book;
+        $book->setAuthor($this);
+    }
+
+    /**
+     * @param  ChildBook $book The ChildBook object to remove.
+     * @return $this|ChildAuthor The current object (for fluent API support)
+     */
+    public function removeBook(ChildBook $book)
+    {
+        if ($this->getBooks()->contains($book)) {
+            $pos = $this->collBooks->search($book);
+            $this->collBooks->remove($pos);
+            if (null === $this->booksScheduledForDeletion) {
+                $this->booksScheduledForDeletion = clone $this->collBooks;
+                $this->booksScheduledForDeletion->clear();
+            }
+            $this->booksScheduledForDeletion[]= clone $book;
+            $book->setAuthor(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Author is new, it will return
+     * an empty collection; or if this Author has previously
+     * been saved, it will retrieve related Books from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Author.
+     *
+     * @param      Criteria $criteria optional Criteria object to narrow the query
+     * @param      ConnectionInterface $con optional connection object
+     * @param      string $joinBehavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return ObjectCollection|ChildBook[] List of ChildBook objects
+     */
+    public function getBooksJoinPublisher(Criteria $criteria = null, ConnectionInterface $con = null, $joinBehavior = Criteria::LEFT_JOIN)
+    {
+        $query = ChildBookQuery::create(null, $criteria);
+        $query->joinWith('Publisher', $joinBehavior);
+
+        return $this->getBooks($query, $con);
+    }
+
+    /**
+     * Clears the current object, sets all attributes to their default values and removes
+     * outgoing references as well as back-references (from other objects to this one. Results probably in a database
+     * change of those foreign objects when you call `save` there).
      */
     public function clear()
     {
         $this->id = null;
-        $this->uuid = null;
-        $this->email = null;
-        $this->password = null;
         $this->first_name = null;
         $this->last_name = null;
-        $this->created_at = null;
-        $this->updated_at = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
         $this->resetModified();
@@ -1350,19 +1385,24 @@ abstract class User implements ActiveRecordInterface
     }
 
     /**
-     * Resets all references to other model objects or collections of model objects.
+     * Resets all references and back-references to other model objects or collections of model objects.
      *
-     * This method is a user-space workaround for PHP's inability to garbage collect
-     * objects with circular references (even in PHP 5.3). This is currently necessary
-     * when using Propel in certain daemon or large-volume/high-memory operations.
+     * This method is used to reset all php object references (not the actual reference in the database).
+     * Necessary for object serialisation.
      *
      * @param      boolean $deep Whether to also clear the references on all referrer objects.
      */
     public function clearAllReferences($deep = false)
     {
         if ($deep) {
+            if ($this->collBooks) {
+                foreach ($this->collBooks as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
         } // if ($deep)
 
+        $this->collBooks = null;
     }
 
     /**
@@ -1372,21 +1412,7 @@ abstract class User implements ActiveRecordInterface
      */
     public function __toString()
     {
-        return (string) $this->exportTo(UserTableMap::DEFAULT_STRING_FORMAT);
-    }
-
-    // timestampable behavior
-
-    /**
-     * Mark the current object so that the update date doesn't get updated during next save
-     *
-     * @return     ChildUser The current object (for fluent API support)
-     */
-    public function keepUpdateDateUnchanged()
-    {
-        $this->modifiedColumns[] = UserTableMap::UPDATED_AT;
-
-        return $this;
+        return (string) $this->exportTo(AuthorTableMap::DEFAULT_STRING_FORMAT);
     }
 
     /**
