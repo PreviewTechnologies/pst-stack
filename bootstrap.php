@@ -31,6 +31,10 @@ $container['view'] = function ($container) {
         )
     );
 
+    $view->addExtension(
+        new Twig_Extension_Debug()
+    );
+
     return $view;
 };
 
