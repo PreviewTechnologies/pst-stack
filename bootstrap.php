@@ -35,6 +35,8 @@ $container['view'] = function ($container) {
         new Twig_Extension_Debug()
     );
 
+    $view->offsetSet('userGlobalData' , App::getUser());
+
     return $view;
 };
 
