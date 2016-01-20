@@ -1,12 +1,13 @@
 <?php
 
 $app->get('/', function ($request, $response, $args) {
+
     return $this->view->render($response, 'home.twig',
         [
 
         ]
     );
-});
+})->add(new AuthMiddleware());
 
 $app->get('/login', function ($request, $response, $args) {
     return $this->view->render($response, 'login.twig',
@@ -22,8 +23,11 @@ $app->post(
         $data = $request->getParsedBody();
 
         $emailAddress = strtolower(filter_var($data['email'], FILTER_SANITIZE_STRING));
+
         $password = filter_var($data['password'], FILTER_SANITIZE_STRING);
-        if ($user = UserQuery::create()->filterByEmailAddress($emailAddress)->findOne()) {
+
+        if ($user = UserQuery::create()->filterByEmail($emailAddress)->findOne()) {
+
             if (password_verify($password, $user->getPassword())) {
                 $_SESSION['user'] = $user->getUUID();
                 return $response->withRedirect('/');
@@ -68,7 +72,7 @@ $app->post(
         $user = new User();
         $user->setFirstName($firstName);
         $user->setLastName($lastName);
-        $user->setEmailAddress($emailAddress);
+        $user->setEmail($emailAddress);
         $user->setPassword(password_hash($password, PASSWORD_BCRYPT));
         $user->setUUID(UUID::v4());
 
