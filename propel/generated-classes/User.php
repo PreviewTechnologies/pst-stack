@@ -1,9 +1,9 @@
 <?php
 
-use Base\Book as BaseBook;
+use Base\User as BaseUser;
 
 /**
- * Skeleton subclass for representing a row from the 'book' table.
+ * Skeleton subclass for representing a row from the 'user' table.
  *
  *
  *
@@ -12,7 +12,7 @@ use Base\Book as BaseBook;
  * long as it does not already exist in the output directory.
  *
  */
-class Book extends BaseBook
+class User extends BaseUser
 {
 
 }
