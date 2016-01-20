@@ -1,16 +1,19 @@
 <?php
 require "../bootstrap.php";
 
-//some common functions for using within anywhere in the application
+//create middleware here if needed ( not global)
 
-function requireLogin()
-{
+/*$t1 = function ($request, $response, $next) {
+
     if (!App::userLoggedIn()) {
-        $app = \Slim\Slim::getInstance();
-        $app->flash('error', 'You must be logged in to access that page');
-        $app->redirect('/login');
+        return $response->withStatus(301)->withHeader('Location', 'login');
+
+    }else {
+        $response = $next($request, $response);
+        return $response;
     }
-}
+};*/
+
 
 require "../routes/default.php";
 
