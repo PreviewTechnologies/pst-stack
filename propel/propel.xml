@@ -3,7 +3,7 @@
     <propel>
         <database>
             <connections>
-                <connection id="travel">
+                <connection id="pst-stack">
                     <adapter>mysql</adapter>
                     <dsn>mysql:host=127.0.0.1;port=3306;dbname=pst-stack</dsn>
                     <user>root</user>
