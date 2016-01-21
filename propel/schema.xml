@@ -18,7 +18,7 @@
    [TIP]: You can define several schemas for a single project. Just make sure that each of the schema
           filenames end with schema.xml.
 -->
-<database name="travel" defaultIdMethod="native"
+<database name="pst-stack" defaultIdMethod="native"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:noNamespaceSchemaLocation="http://xsd.propelorm.org/1.6/database.xsd"
           namespace=""
@@ -59,7 +59,6 @@
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
         <column name="first_name" type="varchar" size="255" required="true" phpName="FirstName"/>
         <column name="last_name" type="varchar" size="255" required="true" phpName="LastName"/>
-        <column name="user_name" type="varchar" size="255" required="true" phpName="UserName"/>
         <column name="email" type="varchar" size="255" required="true" phpName="Email"/>
         <column name="password" type="varchar" size="255" required="true" phpName="Password"/>
         <column name="uuid" type="varchar" size="255" required="true" phpName="UUID"/>
@@ -74,7 +73,7 @@
 
     <!--
         When you're done with editing, open a terminal and run
-            `$ cd /var/www/travel/propel`
+            `$ cd /var/www/pst-stack/propel`
             `$ vendor/bin/propel build`
         to generate the model classes.
 
