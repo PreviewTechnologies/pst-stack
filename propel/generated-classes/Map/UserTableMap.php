@@ -39,7 +39,7 @@ class UserTableMap extends TableMap
     /**
      * The default database name for this class
      */
-    const DATABASE_NAME = 'travel';
+    const DATABASE_NAME = 'pst-stack';
 
     /**
      * The table name for this class

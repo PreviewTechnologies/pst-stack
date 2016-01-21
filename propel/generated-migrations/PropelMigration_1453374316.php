@@ -2,10 +2,10 @@
 
 /**
  * Data object containing the SQL and PHP code to migrate the database
- * up to version 1453369009.
- * Generated on 2016-01-21 15:36:49 by root
+ * up to version 1453374316.
+ * Generated on 2016-01-21 17:05:16 by root
  */
-class PropelMigration_1453369009
+class PropelMigration_1453374316
 {
     public $comment = '';
 
@@ -38,23 +38,14 @@ class PropelMigration_1453369009
     public function getUpSQL()
     {
         return array (
-  'travel' => '
+  'pst-stack' => '
 # This is a fix for InnoDB in MySQL >= 4.1.x
 # It "suspends judgement" for fkey relationships until are tables are set.
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE TABLE `user`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `first_name` VARCHAR(255) NOT NULL,
-    `last_name` VARCHAR(255) NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `password` VARCHAR(255) NOT NULL,
-    `uuid` VARCHAR(255) NOT NULL,
-    `created_at` DATETIME,
-    `updated_at` DATETIME,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
+ALTER TABLE `user`
+
+  ADD `user_name` VARCHAR(255) NOT NULL AFTER `last_name`;
 
 # This restores the fkey checks, after having unset them earlier
 SET FOREIGN_KEY_CHECKS = 1;
@@ -71,12 +62,14 @@ SET FOREIGN_KEY_CHECKS = 1;
     public function getDownSQL()
     {
         return array (
-  'travel' => '
+  'pst-stack' => '
 # This is a fix for InnoDB in MySQL >= 4.1.x
 # It "suspends judgement" for fkey relationships until are tables are set.
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS `user`;
+ALTER TABLE `user`
+
+  DROP `user_name`;
 
 # This restores the fkey checks, after having unset them earlier
 SET FOREIGN_KEY_CHECKS = 1;

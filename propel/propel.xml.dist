@@ -12,9 +12,9 @@
     <propel>
         <paths>
             <!-- The directory where Propel expects to find your `schema.xml` file. -->
-            <schemaDir>/var/www/travel/propel</schemaDir>
+            <schemaDir>/var/www/pst-stack/propel</schemaDir>
             <!-- The directory where Propel should output generated object model classes. -->
-            <phpDir>/var/www/travel/propel/generated-classes</phpDir>
+            <phpDir>/var/www/pst-stack/propel/generated-classes</phpDir>
         </paths>
 
         <!--
@@ -22,9 +22,9 @@
             <connections>
                 <connection id="default">
                     <adapter>mysql</adapter>
-                    <dsn>mysql:host=localhost;port=3306;dbname=travel</dsn>
+                    <dsn>mysql:host=localhost;port=3306;dbname=pst-stack</dsn>
                     <user>root</user>
-                    <password></password>
+                    <password>ltqpsmr7</password>
                     <settings>
                         <charset>utf8</charset>
                     </settings>
