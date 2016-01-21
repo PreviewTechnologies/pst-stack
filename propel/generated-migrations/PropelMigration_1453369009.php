@@ -2,10 +2,10 @@
 
 /**
  * Data object containing the SQL and PHP code to migrate the database
- * up to version 1453210771.
- * Generated on 2016-01-19 19:39:31 by root
+ * up to version 1453369009.
+ * Generated on 2016-01-21 15:36:49 by root
  */
-class PropelMigration_1453210771
+class PropelMigration_1453369009
 {
     public $comment = '';
 
@@ -38,41 +38,21 @@ class PropelMigration_1453210771
     public function getUpSQL()
     {
         return array (
-  'default' => '
+  'travel' => '
 # This is a fix for InnoDB in MySQL >= 4.1.x
 # It "suspends judgement" for fkey relationships until are tables are set.
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE TABLE `book`
+CREATE TABLE `user`
 (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `title` VARCHAR(255) NOT NULL,
-    `isbn` VARCHAR(24) NOT NULL,
-    `publisher_id` INTEGER NOT NULL,
-    `author_id` INTEGER NOT NULL,
-    PRIMARY KEY (`id`),
-    INDEX `book_fi_35872e` (`publisher_id`),
-    INDEX `book_fi_ea464c` (`author_id`),
-    CONSTRAINT `book_fk_35872e`
-        FOREIGN KEY (`publisher_id`)
-        REFERENCES `publisher` (`id`),
-    CONSTRAINT `book_fk_ea464c`
-        FOREIGN KEY (`author_id`)
-        REFERENCES `author` (`id`)
-) ENGINE=InnoDB;
-
-CREATE TABLE `author`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `first_name` VARCHAR(128) NOT NULL,
-    `last_name` VARCHAR(128) NOT NULL,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
-
-CREATE TABLE `publisher`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(128) NOT NULL,
+    `first_name` VARCHAR(255) NOT NULL,
+    `last_name` VARCHAR(255) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `uuid` VARCHAR(255) NOT NULL,
+    `created_at` DATETIME,
+    `updated_at` DATETIME,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
@@ -91,16 +71,12 @@ SET FOREIGN_KEY_CHECKS = 1;
     public function getDownSQL()
     {
         return array (
-  'default' => '
+  'travel' => '
 # This is a fix for InnoDB in MySQL >= 4.1.x
 # It "suspends judgement" for fkey relationships until are tables are set.
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP TABLE IF EXISTS `book`;
-
-DROP TABLE IF EXISTS `author`;
-
-DROP TABLE IF EXISTS `publisher`;
+DROP TABLE IF EXISTS `user`;
 
 # This restores the fkey checks, after having unset them earlier
 SET FOREIGN_KEY_CHECKS = 1;
