@@ -59,6 +59,7 @@
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true"/>
         <column name="first_name" type="varchar" size="255" required="true" phpName="FirstName"/>
         <column name="last_name" type="varchar" size="255" required="true" phpName="LastName"/>
+        <column name="user_name" type="varchar" size="255" required="true" phpName="UserName"/>
         <column name="email" type="varchar" size="255" required="true" phpName="Email"/>
         <column name="password" type="varchar" size="255" required="true" phpName="Password"/>
         <column name="uuid" type="varchar" size="255" required="true" phpName="UUID"/>
