@@ -5,7 +5,7 @@
             <connections>
                 <connection id="travel">
                     <adapter>mysql</adapter>
-                    <dsn>mysql:host=localhost;port=3306;dbname=travel</dsn>
+                    <dsn>mysql:host=127.0.0.1;port=3306;dbname=pst-stack</dsn>
                     <user>root</user>
                     <password>ltqpsmr7</password>
                     <settings>
