@@ -2,7 +2,6 @@
 
 use Base\UserQuery as BaseUserQuery;
 
-
 /**
  * Skeleton subclass for performing query and update operations on the 'user' table.
  *
@@ -16,4 +15,4 @@ use Base\UserQuery as BaseUserQuery;
 class UserQuery extends BaseUserQuery
 {
 
-} // UserQuery
+}

@@ -1,81 +1,92 @@
 <?php
-// Define routes
-$app->get('/', 'requireLogin', function () use ($app) {
 
-    $user = App::getUser()->toArray();
+$app->get('/', function ($request, $response, $args) {
 
-    $app->log->info("Slim-Skeleton '/' route");
-    $app->render('home.twig', array('user' => $user));
-});
+    return $this->view->render($response, 'home.twig',
+        [
 
-$app->get('/login', function () use ($app) {
+        ]
+    );
+})->add(new AuthMiddleware());
 
-    $user = UserQuery::create()
-        ->find();
+$app->get('/login', function ($request, $response, $args) {
+    return $this->view->render($response, 'login.twig',
+        [
 
-    $app->log->info("Slim-Skeleton '/' route");
-
-    $app->render('login.twig');
+        ]
+    );
 });
 
 $app->post(
     '/login',
-    function () use ($app) {
-        $emailAddress = strtolower(filter_var($app->request()->post('email'), FILTER_SANITIZE_STRING));
-        $password = filter_var($app->request()->post('password'), FILTER_SANITIZE_STRING);
-        if ($user = UserQuery::create()->filterByEmailAddress($emailAddress)->findOne()) {
+    function ($request, $response, $args) {
+        $data = $request->getParsedBody();
+
+        $emailAddress = strtolower(filter_var($data['email'], FILTER_SANITIZE_STRING));
+
+        $password = filter_var($data['password'], FILTER_SANITIZE_STRING);
+
+        if ($user = UserQuery::create()->filterByEmail($emailAddress)->findOne()) {
+
             if (password_verify($password, $user->getPassword())) {
                 $_SESSION['user'] = $user->getUUID();
-                $app->redirect('/');
-            } else {
-                $app->flash('error', 'Invalid email address and/or password');
-                $app->redirect('/login');
+                return $response->withRedirect('/');
             }
-        } else {
-            $app->flash('error', 'Invalid email address and/or password');
-            $app->redirect('/login');
+            else {
+                $this->flash->addMessage('error', 'Invalid email address and/or password');
+                return $response->withRedirect('login');
+            }
+        }
+        else {
+            $this->flash->addMessage('error', 'Invalid email address and/or password');
+            return $response->withRedirect('login');
         }
     }
 );
-$app->get('/signup', function () use ($app) {
+
+$app->get('/signup', function ($request, $response, $args) {
+
     if (App::userLoggedIn()) {
-        $app->flash('error', 'You are already logged in');
-        $app->redirect('/');
+        /*
+         * @TODO need to redirect into login page.
+         */
     }
 
-    $app->log->info("Slim-Skeleton '/' route");
+    return $this->view->render($response, 'signup.twig',
+        [
 
-    $app->render('signup.twig');
+        ]
+    );
 });
 
 $app->post(
     '/signup',
-    function () use ($app) {
-        $emailAddress = strtolower(filter_var($app->request()->post('email'), FILTER_SANITIZE_STRING));
-        $password = filter_var($app->request()->post('password'), FILTER_SANITIZE_STRING);
-        $firstName = filter_var($app->request()->post('firstName'), FILTER_SANITIZE_STRING);
-        $lastName = filter_var($app->request()->post('lastName'), FILTER_SANITIZE_STRING);
+    function ($request, $response, $args) {
+        $data = $request->getParsedBody();
+
+        $emailAddress = strtolower(filter_var($data['email'], FILTER_SANITIZE_STRING));
+        $password = filter_var($data['password'], FILTER_SANITIZE_STRING);
+        $firstName = filter_var($data['firstName'], FILTER_SANITIZE_STRING);
+        $lastName = filter_var($data['lastName'], FILTER_SANITIZE_STRING);
 
         $user = new User();
         $user->setFirstName($firstName);
         $user->setLastName($lastName);
-        $user->setEmailAddress($emailAddress);
+        $user->setEmail($emailAddress);
         $user->setPassword(password_hash($password, PASSWORD_BCRYPT));
         $user->setUUID(UUID::v4());
-        if($user->save()){
-            $app->flash('info', 'Signup successful. You may login now!');
-            $app->redirect('/login');
-        }else{
-            $app->flash('error', 'Something went wrong!');
-            $app->redirect('/signup');
+
+        if ($user->save()) {
+            $this->flash->addMessage('info', 'Signup successful. You may login now!');
+            return $response->withRedirect('login');
+        } else {
+            $this->flash->addMessage('error', 'Sorry, something went wrong');
+            return $response->withRedirect('signup');
         }
     }
 );
 
-$app->get(
-    '/logout',
-    function () use ($app) {
-        unset($_SESSION['user']);
-        $app->redirect('/login');
-    }
-);
+$app->get('/logout', function ($request, $response, $args) {
+    unset($_SESSION['user']);
+    return $response->withRedirect('login');
+});
