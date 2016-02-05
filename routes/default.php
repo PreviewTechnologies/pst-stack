@@ -30,15 +30,16 @@ $app->post(
 
             if (password_verify($password, $user->getPassword())) {
                 $_SESSION['user'] = $user->getUUID();
+
                 return $response->withRedirect('/');
-            }
-            else {
+            } else {
                 $this->flash->addMessage('error', 'Invalid email address and/or password');
+
                 return $response->withRedirect('login');
             }
-        }
-        else {
+        } else {
             $this->flash->addMessage('error', 'Invalid email address and/or password');
+
             return $response->withRedirect('login');
         }
     }
@@ -78,9 +79,11 @@ $app->post(
 
         if ($user->save()) {
             $this->flash->addMessage('info', 'Signup successful. You may login now!');
+
             return $response->withRedirect('login');
         } else {
             $this->flash->addMessage('error', 'Sorry, something went wrong');
+
             return $response->withRedirect('signup');
         }
     }
@@ -88,5 +91,6 @@ $app->post(
 
 $app->get('/logout', function ($request, $response, $args) {
     unset($_SESSION['user']);
+
     return $response->withRedirect('login');
 });
