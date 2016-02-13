@@ -1,7 +1,12 @@
-/vendor/
+# project specific directory
+config.php
+vendor/
 tmp/*
-.DS_STORE
-propel/generated-conf/config.php
-/tmp/*
+propel/propel.xml
+propel/generated-conf/*
+config/settings.php
 
+
+# editor specific directory
+.DS_STORE
 .idea/*

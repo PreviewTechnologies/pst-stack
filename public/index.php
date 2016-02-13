@@ -1,20 +1,12 @@
 <?php
-require "../bootstrap.php";
+//Application Bootstrap file
+require dirname(__DIR__).DIRECTORY_SEPARATOR.'config/bootstrap.php';
 
-//create middleware here if needed ( not global)
+$pst = new \PstStack\Utility\Utility();
+var_dump($pst->test()); die();
 
-/*$t1 = function ($request, $response, $next) {
-
-    if (!App::userLoggedIn()) {
-        return $response->withStatus(301)->withHeader('Location', 'login');
-
-    }else {
-        $response = $next($request, $response);
-        return $response;
-    }
-};*/
-
-
+//All routes
 require "../routes/default.php";
 
+//Run the application
 $app->run();

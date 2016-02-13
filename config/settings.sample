@@ -1,0 +1,27 @@
+<?php
+return [
+    'app' => [
+        'name' => 'PST-Stack',
+        'namespace' => 'pst-stack',
+        'host' => 'localhost',  //application hostname
+        'port' => 80,   //Application web port
+        'encoding' => ['mb_internal_encoding' => 'UTF-8', 'mb_http_output' => 'UTF-8'],
+        'timezone' => 'Asia/Dhaka', //Your timezone
+        'root_dir' => dirname(__DIR__) . DIRECTORY_SEPARATOR,
+        'tmp_dir' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR,
+        'template' => [
+            'dir' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'templates',
+            'cache' => dirname(__DIR__) . DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR . 'cache',
+            'debug' => true,
+            'auto_reload' => true
+        ],
+        'db' => [
+            'host' => '127.0.0.1',  //Your Database Hostname
+            'port' => '3306',   //Database Port
+            'username' => 'DatabaseUsername',   //Database Username
+            'password' => 'DatabasePassword',   //Database Password
+            'name' => 'DatabaseName',  //Database name
+            'charset' => 'utf8' //Database charset
+        ],
+    ],
+];

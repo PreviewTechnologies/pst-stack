@@ -2,10 +2,10 @@
 
 /**
  * Data object containing the SQL and PHP code to migrate the database
- * up to version 1453377396.
- * Generated on 2016-01-21 17:56:36 by root
+ * up to version 1455395439.
+ * Generated on 2016-02-14 02:30:39 by root
  */
-class PropelMigration_1453377396
+class PropelMigration_1455395439
 {
     public $comment = '';
 
@@ -38,18 +38,7 @@ class PropelMigration_1453377396
     public function getUpSQL()
     {
         return array (
-  'pst-stack' => '
-# This is a fix for InnoDB in MySQL >= 4.1.x
-# It "suspends judgement" for fkey relationships until are tables are set.
-SET FOREIGN_KEY_CHECKS = 0;
-
-ALTER TABLE `user`
-
-  DROP `user_name`;
-
-# This restores the fkey checks, after having unset them earlier
-SET FOREIGN_KEY_CHECKS = 1;
-',
+  'pst-stack' => '',
 );
     }
 
@@ -62,18 +51,7 @@ SET FOREIGN_KEY_CHECKS = 1;
     public function getDownSQL()
     {
         return array (
-  'pst-stack' => '
-# This is a fix for InnoDB in MySQL >= 4.1.x
-# It "suspends judgement" for fkey relationships until are tables are set.
-SET FOREIGN_KEY_CHECKS = 0;
-
-ALTER TABLE `user`
-
-  ADD `user_name` VARCHAR(255) NOT NULL AFTER `last_name`;
-
-# This restores the fkey checks, after having unset them earlier
-SET FOREIGN_KEY_CHECKS = 1;
-',
+  'pst-stack' => '',
 );
     }
 

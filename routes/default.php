@@ -4,7 +4,6 @@ $app->get('/', function ($request, $response, $args) {
 
     return $this->view->render($response, 'home.twig',
         [
-
         ]
     );
 })->add(new AuthMiddleware());
@@ -76,7 +75,6 @@ $app->post(
         $user->setEmail($emailAddress);
         $user->setPassword(password_hash($password, PASSWORD_BCRYPT));
         $user->setUUID(UUID::v4());
-
         if ($user->save()) {
             $this->flash->addMessage('info', 'Signup successful. You may login now!');
 
