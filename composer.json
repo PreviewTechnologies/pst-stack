@@ -30,7 +30,8 @@
     ],
     "psr-4": {
       "": "src/",
-      "PstStack\\": "src/"
+      "PstStack\\": "src/",
+      "App\\": "src/"
     }
   }
 }
